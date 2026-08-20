@@ -108,6 +108,18 @@ def login_from_refresh_token(refresh_token: str) -> bool:
     return _apply_session(res.session, res.user)
 
 
+def list_my_entitlements() -> list[dict]:
+    """คืนรายการเครื่องมือทั้งหมดที่บัญชีนี้มีสิทธิ์ใช้งานอยู่ (ทุกตัว ไม่ใช่แค่ตัวนี้)"""
+    try:
+        res = (_client().table("entitlements")
+               .select("expires_at,tools(name,app_base_url)")
+               .eq("status", "active")
+               .execute())
+    except Exception:
+        return []
+    return res.data or []
+
+
 def logout() -> None:
     try:
         _client().auth.sign_out()
